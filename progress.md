@@ -37,3 +37,4 @@
 - 确认目标仓库 `pengliu0804/lw` 尚不存在，准备新建。
 - 新增根目录 `.gitignore`，排除 `.venv/`、数据目录、训练输出、模型权重和缓存。
 - 新增根目录 `README.md`，说明规划文件和两个 ECG starter project 的用途。
+- 初始化 Git 仓库，创建公开远程仓库 `https://github.com/pengliu0804/lw`，并推送 `main` 分支。
