@@ -1,0 +1,7 @@
+torch
+wfdb==4.2.0
+pandas<3
+numpy
+scipy
+scikit-learn
+matplotlib
