@@ -1,0 +1,1417 @@
+PAGES: 19
+
+
+--- PAGE 1 ---
+SleepFM: Multi-modal Representation Learning for Sleep Across Brain Activity,
+ECG and Respiratory Signals
+RahulThapa1 BryanHe2 MagnusRuudKjær3 HyattMoore4 GauriGanjoo4 EmmanuelMignot45
+JamesZou125
+Abstract diachealth(Worley,2018;Brink-Kjaeretal.,2022;Leary
+etal.,2021). Polysomnography(PSG)isthecurrentgold
+Sleepisacomplexphysiologicalprocessevalu-
+standardforstudyingsleepbyrecordingdiversephysiolog-
+ated through various modalities recording elec-
+icalsignalsduringsleep,includingelectroencephalogram
+trical brain, cardiac, and respiratory activities.
+(EEG),electroocculograms(EOG),andelectromyography
+Wecuratealargepolysomnographydatasetfrom
+(EMG),electrocardiogram(ECG)andrespiratorychannels
+over14,000participantscomprisingover100,000
+(Krygeretal.,2010). EOGandEMGareoftencombined
+hoursofmulti-modalsleeprecordings. Leverag-
+withEEGrecordingstobetterdeterminesleepstages,which
+ingthisextensivedataset,wedevelopedSleepFM,
+we refer to collectively as Brain Activity Signals (BAS).
+thefirstmulti-modalfoundationmodelforsleep
+These different data modalities offer complementary per-
+analysis. We show that a novel leave-one-out
+spectives. BASmeasuresbrainactivitytocategorizesleep
+approachforcontrastivelearningsignificantlyim-
+stages and diagnose sleep disorders. ECG captures heart
+provesdownstreamtaskperformancecompared
+rhythms; changes in heart rate can indicate sleep disor-
+to representations from standard pairwise con-
+deredbreathingevents. Respiratorysensorsdirectlyquan-
+trastive learning. A logistic regression model
+tifybreathingpatternsincludingsleepdisorderedbreathing
+trained on SleepFM’s learned embeddings out-
+(SDB). Together, these signals provide a comprehensive
+performsanend-to-endtrainedconvolutionalneu-
+assessmentofsleephealth.
+ralnetwork(CNN)onsleepstageclassification
+(macroAUROC0.88vs0.72andmacroAUPRC Traditionally, sleep data analysis involved manual visual
+0.72vs0.48)andsleepdisorderedbreathingde- inspection,alabor-intensiveandtime-consumingprocess
+tection(AUROC0.85vs0.69andAUPRC0.77vs prone to errors (Boashash & Ouelha, 2016; Hassan &
+0.61). Notably,thelearnedembeddingsachieve Bhuiyan,2017). Recentadvancementsinsuperviseddeep
+48%top-1averageaccuracyinretrievingmodal- learninghaveshownpromiseinautomatingsleepstaging
+ityclippairsfrom90,000candidates. Thiswork andclassificationofdisorderslikeSDB(Nassietal.,2021;
+demonstrates the value of holistic multi-modal Perslev et al., 2021; Stephansen et al., 2018). However,
+sleep modeling to fully capture the richness of mostmethodsrelyonlabeleddatafromanarrowtask. They
+sleep recordings. SleepFM is open source and rarelyleveragethefullbreadthofunlabeledphysiological
+availableathttps://github.com/rthapa84/sleepfm- dynamicswithinandacrossdiversePSGsensors.
+codebase.
+Inparallel,contrastivelearning(CL)hasemergedasapow-
+erfultechniqueinotherdomainstolearnrepresentationsby
+1.Introduction maximizingalignmentbetweenmodalities(Radfordetal.,
+2021). However,jointintegrationofBAS,ECG,andrespi-
+Sleepmonitoringiscriticaltoevaluatesleepdisordersbut ratorysignalsfromPSGsviamulti-modalCLhasbeenless
+alsoasaproxytoassessoverallbrain,pulmonary,andcar- explored. PreviousworkshavefocusedsolelyonECGor
+combinedECGwithelectronichealthrecords(EHR),while
+1Department of Biomedical Data Science, Stanford Uni-
+versity 2Department of Computer Science, Stanford University jointmodelingofBAS,respiratory, andECGsignalshas
+3DepartmentofHealthTechnology,TechnicalUniversityofDen- beenlimited. Ourworkdemonstratesafirstattemptatde-
+mark4DepartmentofPsychiatryandBehavioralSciences,Stanford velopingamulti-modalCLapproachforPSGanalysisthat
+University5Co-seniorauthors.Correspondenceto:RahulThapa
+capitalizesonsynergiesbetweenBAS,ECG,andrespiratory
+<rthapa84@stanford.edu>.
+signalstolearnenhancedphysiologicalrepresentationsfor
+Proceedings of the 41st International Conference on Machine sleepanalysis.
+Learning,Vienna,Austria.PMLR235,2024.Copyright2024by
+OurContributionWeintroduceSleepFM,asleepfounda-
+theauthor(s).
+1
+
+
+--- PAGE 2 ---
+SleepFM:Multi-ModalSleepFoundationModel
+tionmodeltrainedusingCLonamulti-modalPSGdataset trastiveLanguage-ImagePretraining(CLIP)model(Rad-
+comprising over 100,000 hours of sleep monitoring data fordetal.,2021),whichalignsimageandtextembeddings.
+fromover14,000participantsatStanfordsleepcliniccol- Inmedicine,ConVIRT(Zhangetal.,2022)pioneeredmulti-
+lectedbetween1999and2020. BycombiningBAS,ECG, modal CL between chest radiographs and reports. Other
+andrespiratorymodalitiesfromPSG,SleepFMexhibitssu- workshaveexploredsimilardirectionsformedicalimages
+periorperformanceontaskssuchasdemographicattributes, (Huang et al., 2021; Boecking et al., 2022; Bannur et al.,
+sleepstage,andSDBeventclassifications,outperforming 2023;Luetal.,2023).
+end-to-end trained convolutional neural network (CNN)
+Outside of computer vision, uni-modal contrastive meth-
+models. Additionally,weintroduceanovelleave-one-out
+odshavebeenappliedtotimeseriesdatalikeECGsignals
+approachforCL,whichsignificantlyoutperformsthestan-
+(Kiyassehetal.,2021;Gopaletal.,2021). CLhasalsoen-
+dardpairwiseCLonallofourdownstreamtasks. Toour
+abledsignalconversiontasks(Nørskovetal.,2023). How-
+knowledge,thisisthefirstattempttobuildandevaluatea
+ever,contrastiverepresentationlearningacrossdiversephys-
+multi-modalfoundationmodelforsleepanalysis.
+iologicalmodalitiesremainsrelativelyuncharted. Twoprior
+studieshaveinvestigatedcontrastivemulti-modalclinical
+2.RelatedWork timeseriesanalysis.OneworkemployedSimCLR-stylepre-
+trainingondataencompassingECGandstructuredrecords
+2.1.MachineLearningforAnalyzingSleepData
+(Raghuetal.,2022). AnotherderivedECGrepresentations
+The application of machine learning (ML) in sleep stud- bycontrastingECGs,structuredEHRs,andclinicalnotes
+ieshasgarneredsignificantrecentattention,promisingto (Lalametal.,2023).
+streamlineandexpeditethesleepscoringprocessaswellas
+SleepFMdiffersfromthesepastworksintwoprimaryways.
+detectingrespiratoryeventssuchasSDB.Modelsincluding
+First,itexploresself-supervisedrepresentationlearningon
+autoencoders(Tsinalis et al.,2016), convolutionalneural
+alargesleepdataset,whilemostpriorworksrelyonsuper-
+networks(CNNs)(Tsinalisetal.;Sorsetal.,2018;Yildirim
+visedlearning. Second,itisthefirstcontrastivemodelthat
+etal.,2019),recurrentneuralnetworks(RNNs)(Michielli
+utilizesawidearrayofsleepmodalitiessuchasBAS,ECG
+etal.,2019;Phanetal.,2019),andmultipleothervariations
+waveforms,andrespiratorysignals,covering19datachan-
+of deep neural networks (DNNs) (Supratak et al., 2017;
+nelsacrossthreemainphysiologicalsystems: brain,heart,
+Mousavi et al., 2019; Seo et al., 2020; Phan et al., 2021;
+andlungs. AlongsidepairwiseCL,weproposeandevaluate
+Perslevetal.,2021)havebeenproposedforsleepscoring
+anovelleave-one-outCLapproach. Comprehensivedown-
+tasks.
+streamtasksverifySleepFM’ssuperiorperformanceover
+Moreover,inthedomainofrespiratoryeventclassification, supervisedbaseline.
+automatic detection of SDB using ECG (Urtnasan et al.,
+2020;Tripathyetal.,2020),EEG(Zhaoetal.,2021),and 3.Method
+PSGwithitsrespiratorychannels(Mostafaetal.,2020;Yu
+etal.,2022;Haidaretal.,2018;Yeoetal.,2021;Nassietal., 3.1.DatasetandPreprocessing
+2021;Stephansenetal.,2018)hasbeenexploredextensively.
+OurdatasetencompassesPSGrecordsfromStanfordSleep
+Arecentstudyintroducedamulti-tasklearningapproach,
+Clinic from 1999-2020, spanning participants aged 2-91.
+trainingasuperviseddeeplearningmodeltopredictdiverse
+Comprising14,068recordings,thisdatasetfeaturesdiverse
+sleepevents(e.g.,sleepstages,arousal,legmovements,and
+waveforms, suchasBAS,ECG,andrespiratorychannels
+sleep-disorderedbreathing)usingmultiplesleepmodalities
+collected over approximately 8 hours per individual. Its
+likeEEG,EOG,andEMG(Zahidetal.,2023). Thesestud-
+comprehensivenaturemakesitavaluableandhigh-quality
+iespredominantlyutilizesupervisedlearning,oftenlimited
+resourceforsleep-relatedresearch.
+byanarrowsubsetofdownstreamtasks.
+Our preprocessing strategy aimed to make minimal alter-
+2.2.ContrastiveLearning ationstopreserverawsignalcharacteristicscrucialfornu-
+ancedpatternrecognition. Eachrecordingconsistsofthree
+Amajordevelopmentinself-supervisedlearningtechniques
+modalities: BAS,ECG,andrespiratory,encompassing10,
+istheriseofcontrastivemethodsforcomprehensivedata
+2,and7channels,respectively. TheBASmodalityincludes
+representation learning. In computer vision, influential
+channelsgaugingbrainactivityfromvariousbrainregions
+frameworkshaveemergedincluding: InfoNCE(Oordetal.,
+(frontal,central,occipital),aswellasEOGforeyemove-
+2018),SimCLR(Chenetal.,2020),MoCo(Heetal.,2020),
+mentandEMGforchinmuscleactivation. TheECGmodal-
+and SupCon (Khosla et al., 2020). These uni-modal con-
+itycontainschannelsthatmeasureelectricalcardiacfunc-
+trastiveapproachesfocusprimarilyonsingledatamodalities
+tion. Therespiratorymodalityincludeschannelsmeasuring
+likeimages. Anotablemulti-modalexceptionistheCon-
+chestandabdomenmovements,pulsereadings,nasaland
+2
+
+
+--- PAGE 3 ---
+SleepFM:Multi-ModalSleepFoundationModel
+oral flow measurements. The selection of these channels facilitatinghierarchicalfeaturelearningonvariable-length
+wasguidedbysleepexpertsduetotheirrelevanceinsleep sequentialdata.
+studies,facilitatingsleepstagescoringandSDBdetection
+(Berryetal.,2012). 3.3.Multi-modalContrastiveLearning
+Subsequently, wesegmentedthetotal sleepdurationinto WeexploretwoCLframeworksforlearningjointrepresen-
+consecutive30-secondclipsforallparticipants,following tationsacrossmodalities: pairwiseCLandleave-one-out
+thestandardclipdurationusedinsleepstudies(Berryetal., CL(Figure1). Thekeyideaistobringpositivepairsof
+2012). Wethenresampledthedatasetto256Hztostandard- embeddingsfromdifferentmodalitiescloserinthelatent
+izethesamplingrateacrossallparticipants. Furthermore, spacewhilepushingapartnegativepairs. Thepositivepairs
+expert sleep technicians labeled each clip for both sleep arederivedfromtemporallyaligned30-secondclipsacross
+stageandSDB.SleepstageiscategorizedintoWake,Stage modalities. Allothernon-matchinginstanceswithinatrain-
+1, Stage2, Stage3, REM,andSDBisabinarylabel. To ingbatcharetreatedasnegativepairs.
+prevent data leakage, the dataset is split into participant-
+levelpretrain/train/validation/testsetsconsistingof11,261, Raw Sleep Data CNN Encoders Embeddings
+1,265,141,and1,401participantsrespectively. Eachpartic- Pairwise
+ipantcontributesmultipleclipstoourdataset,resultingina
+totalof10.6M,1.19M,130K,and1.31Mclips,respectively.
+BAS
+Thepretraindatasetisonlyusedtopretrainourfoundation Encoder
+model. Theremainingsetservestotrainandtestourmodel
+and baseline models for downstream applications as ex-
+plainedinSection4. Thevalidationsetisusedtooptimize
+thehyperparameters. Demographicstatisticsfordifferent
+splitsarepresentedinTable1. Anillustrativesnapshotof
+ourdatacanbefoundinFigure4.
+E1
+ECG E2
+3.2.EmbeddingModel Encoder
+EN
+Ourpre-trainingstageemployedCLasthefoundationalal-
+gorithmforrepresentationlearning,explainedinmoredetail ECG Channels
+inSection3.3. Weusedthree1DCNNstogeneratethree
+separateembeddingsfromtheBAS,ECG,andrespiratory
+modalitiesandtrainedthemseparately. Thearchitectureof
+themodelsisbasedona1DCNNdevelopedforclassifying Respiratory
+ECGmeasurements(Ouyangetal.,2022). Thesemodels Encoder
+differintheirfirstconvolutionallayerstoaccommodatethe
+numberofchannelsspecifictoeachmodality: 10forBAS,
+2forECG,and7forrespiratorychannels.
+Respiratory Channels
+The architecture of these embedding models is rooted in
+EfficientNetarchitecture(Tan&Le,2019). Thearchitec-
+turestartswithatrousconvolutionsfollowedbysubsequent
+multi-channel1Dconvolutions. Thelayercountalignswith
+theoriginaldesignofEfficientNet(Tan&Le,2019),butthe
+numberofchannelsissignificantlyreducedformodelrun-
+timeefficiencyandtominimizecomplexity. Followingthe
+initialatrouslayers,themodelincorporatesconvolutional
+layersutilizinganinvestedresidualstructure,mirroringthe
+inputandoutputbottlenecklayerswithanintermediateex-
+pansionlayer(Sandleretal.,2018).
+Forregularization,adropoutlayerprecedesthefinalfully
+connectedoutputlayer. Depthwiseseparableconvolutions
+areextensivelyutilizedtominimizeparameterswhilepre-
+servingrepresentationalcapacity. Residualconnectionsaid
+gradient flow across multiple layers during optimization,
+...
+R1
+R2
+RN
+...
+Types of Contrastive Learning
+E1
+E2
+EN
+...
+R1
+R2
+RN
+...
+E1 B1
+E2 B2
+EN BN
+R1 B1
+R2 B2
+RN BN
+...
+...
+...
+...
+E1
+E2
+EN
+...
+R1
+R2
+RN
+...
+E1 B1
+E2 B2
+EN BN
+R1 B1
+R2 B2
+RN BN
+...
+...
+...
+...
+B1
+B2
+BN
+...
+R1
+R2
+RN
+...
+E1
+E2
+EN
+...
+B1
+vs.
+B2
+BN
+vs.
+BAS Channels
+vs.
+Leave-One-Out
++ vs.
++ vs.
++ vs.
+Figure1.OverviewofSleepFMpre-trainingwithCL.Weexperi-
+mentwithtwotypesofpre-training:standardpairwiseCLwhere
+wecontrastembeddingsfromeachpairofmodalitiesseparately,
+and our novel leave-one-out CL where we contrast the embed-
+dingofeachmodalityagainsttheaverageembeddingofallother
+modalities.BAS(BrainActivitySignals)measuresbrainactivity,
+eyeandmusclemovement,Electrocardiogram(ECG)measures
+heartactivity,andRespiratorychannelsmeasurechest,abdomen
+movements,pusle,nasal,andoralflow.
+InpairwiseCL,weconstructcontrastivepredictiontasks
+betweenallpairsofmodalities. Weuseacontrastiveloss
+toencourageagreementbetweenpositivepairswhiledis-
+couragingagreementbetweennegativepairs. Specifically,
+formodalitiesiandj andsamplekinabatch,wehavean
+embeddingxi frommodalityiandanembeddingxj from
+k k
+3
+
+
+--- PAGE 4 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table1.Demographicstable.REM:RapidEyeMovement;AHI:Apnea-HypopneaIndex,ameasureusedinsleepmedicinetoassessthe
+severityofsleepapnea;WASO:WakeAfterSleepOnset,thetotaltimespentawakeafterinitiallyfallingasleep;SL:SleepLatency,the
+timeittakestotransitionfromwakefulnesstosleep;REML:REMSleepLatency,thetimeittakestoenterREMsleepafterfallingasleep;
+TSD:TotalSleepDuration,theoveralldurationofsleep.±representsupperandlowerbound.
+pretrain train valid test
+Participants(count) 11,261 1,265 141 1,401
+Events(count) 10,611,314 1,190,392 130,380 1,314,267
+Duration(hours) 88,427 9,920 1,086 10,952
+Male(%) 49.9 50.2 47.1 53.0
+Female(%) 43.8 44.0 48.1 41.8
+Unknown(%) 6.3 5.9 4.8 5.2
+Age(years) 42.2±19.6 43.0±20.3 40.4±20.0 41.9±19.9
+TSD(mins) 376.7±90.8 376.4±90.6 371.2±84.9 374.3±87.5
+WASO(mins) 79.4±60.5 79.7±62.3 78.8±57.3 81.5±62.8
+SL(mins) 22.2±32.8 21.2±31.6 29.0±87.8 22.5±32.6
+REML(mins) 151.9±102.6 149.4±97.7 148.6±99.9 154.8±103.5
+Stage1(%) 9.4±9.2 9.3±8.8 8.2±7.7 9.0±8.9
+Stage2(%) 65.0±14.7 64.8±14.7 64.8±14.7 65.0±14.7
+Stage3(%) 10.2±13.2 10.2±13.2 10.9±12.7 10.3±13.6
+REM(%) 15.5±7.9 15.7±8.0 16.2±6.8 15.7±7.9
+AHI(h−1) 22.2±79.3 22.8±19.1 22.2±18.5 20.9±17.0
+modalityj. Thecontrastivepredictionlossisdefinedas: 3.4.ModelTraining
+pair exp(sim(xi,xj)∗exp(τ)) Ourmodelpretraininginvolvesminimizingthecontrastive
+l =−log k k , (1)
+i,j,k (cid:80)N exp(sim(xi,xj )∗exp(τ)) losswithstochasticgradientdescent(SGD)usinganinitial
+m=1 k m learningratesetto0.001andamomentumof0.9.Thelearn-
+ingrateisdecayedbyafactorof10every5epochs. The
+whereN isthenumberofsamplesinabatch,τ isatrainable
+trainabletemperatureparameterisinitializedto0. Training
+temperature parameter, and sim is cosine similarity. We
+spansamaximumof20epochswithearlystoppingbasedon
+sumthislossoverallthesamplesinabatchandrepeatthe
+validationloss,employingabatchsizeof32andvalidating
+processforallpairsofmodalitiesi,j. Thefinallossisthe
+checkpointsateachepochtoensurerobustregularization.
+sumofpairwisecontrastivelossesoverallmodalitypairs.
+Upon pretraining completion via this self-supervised ap-
+Inleave-one-outCL,weconstructapredictivetaskwhere
+proach,wegenerateembeddingsforthetraining,validation,
+anembeddingfromonemodalitytriestoidentifythecor-
+andtestsets,utilizingthelearnedmodalityencoders. Sub-
+respondingembeddingsfromtheremainingmodalities. In
+sequently,thesetrainingembeddingsdrivethetrainingofa
+particular,foreachmodalityi,weconstructanembedding
+x¯̸=i by averaging over embeddings from all other modal- logisticregressionclassifier. Theclassifier’sperformance
+undergoesevaluationonthetestsetforbothsleepstageand
+ities, excluding modality i. We then apply a contrastive
+SDBeventdetectiontasks,asoutlinedinSection4.3.
+lossbetweenmodalityi’sembeddingandthisleave-one-out
+representation: Inourexperiments,weadditionallycompareagainsttrain-
+l LOO =−log
+exp(sim(xi
+k
+,x̸=
+k
+i)∗exp(τ))
+(2)
+i
+b
+n
+a
+g
+se
+a
+lin
+s
+e
+u
+.
+p
+T
+er
+h
+v
+e
+is
+s
+e
+u
+d
+pe
+C
+rv
+N
+i
+N
+sed
+w
+C
+it
+N
+ho
+N
+ut
+us
+c
+e
+o
+s
+n
+a
+tr
+n
+as
+1
+t
+D
+ive
+Ef
+l
+fi
+ea
+c
+r
+ie
+n
+n
+in
+tN
+g
+e
+a
+t
+s
+ar
+a
+-
+i,k (cid:80)N exp(sim(xi,x̸=i)∗exp(τ))
+m=1 k m chitectureakintoourpretrainedmodelencoderbutissolely
+trained via supervised learning on the entire (pretraining
+Similar to pairwise, this is the loss for a sample k from
++ training) dataset for classification tasks. This architec-
+modalityiinagivenbatch.
+ture uses a series of 1D convolutions encoding all three
+Themotivationbehindtheleave-one-outmethodistoen- modalitiesintoanembeddingspace,followedbyadropout
+courageeachembeddingtocapturesemanticsalignedwith layerforregularizationandafully-connectedlayerpredict-
+allothermodalities. PairwiseCL,ontheotherhand,encour- ing scores across different classes. This model is trained
+agesalignmentsonlybetweenparticularpairsofmodalities. end-to-endfromscratchusingcross-entropylossbetween
+4
+
+
+--- PAGE 5 ---
+SleepFM:Multi-ModalSleepFoundationModel
+thepredictedandtruelabels,optimizedbySGD.Mirroring uesindicatemoreaccurateretrievalamongtoprecom-
+thepretrainingphase,thismodelundergoestrainingfor20 mendations.
+epochswithabatchsizeof32,aligninghyperparameters
+• Medianrank: Determinesthemedianpositionofthe
+with our model pretraining strategy. Additional training
+truepairediteminrankings;alowermedianranksigni-
+detailsareavailableinAppendixA.3.
+fiesamoreconsistentrankingofthecorrectpairamong
+recommendations.
+4.ExperimentsandResults
+Wemeasuredtheretrievalperformanceusing90,000ran-
+4.1.DemographicAttributesClassification
+domlyselected30-secondclipsencompassingallmodalities
+We evaluated our SleepFM’s embedding quality by train- from the test set. To ensure a representative sample, we
+ingalogisticregressionclassifierontopofthecombined uniformlyselectedclipsfromvariouseventtypesacrossall
+multimodalembeddingstopredictcommondemographic participantswithinthetestset. TheRecall@10forrandom
+attributes such as age and gender. Our classification task retrievalsis10/90000=0.0001.
+directlyusedthe30-secondclip-levelembeddingsgenerated
+SleepFMachievedover500x-8000xhigherRecall@10than
+bySleepFM.Forageprediction,wegroupedagesintothe
+therandomchanceasshowninTable4andTable5. Pair-
+following categories: 0-18, 18-35, 35-50, and 50+. The
+wise CL yields better overall retrieval performance than
+prevalenceoftheseagegroupsinourdatasetis0.17,0.18,
+leave-one-out, likely because the retrieval evaluation di-
+0.28,and0.37,respectively. Forgenderclassification,we
+rectlymapsthetrainingprocedureofpairwise. Onetrend
+consideredmalevs. female,withtheprevalenceoffemales
+acrossbothmetricsisthatretrievalperformancebetweenres-
+being 0.41 in our dataset. We evaluated the performance
+piratoryandothermodalitiesiscomparativelyworse. The
+basedonAUROC(AreaUndertheReceiverOperatingChar-
+discrepancy in retrieval performance may stem from the
+acteristic curve) and AUPRC (Area Under the Precision-
+highervariabliltyoftherespiratorymeasurements. While
+RecallCurve). Asabaseline,wetrainedaCNNend-to-end
+BAS is directly measured via electrical activity from the
+toperformageandgenderclassificationgiventhecombined
+brainandECGisdirectlymeasuredviaelectricalactivity
+multimodalrawinputdata.
+fromtheheart,therespiratorychannelsindirectlymeasure
+WefindthatSleepFMcanpredictageandgenderwithhigh breathingthroughthemovementoftheparticipant,which
+accuracyfromjust30-secondclipsofphysiologicaldata(Ta- canbeinfluencedbybodypositionandnon-breathingre-
+ble2andTable3).Bothourpre-trainedmodelssignificantly latedmotion.
+outperformtheend-to-endCNNbaselineacrossallevalua-
+tionmetricsandtasks. Notethattheend-to-endsupervised 4.3.DownstreamClassificationTasks
+CNNusedthefull(pretraining+training)datasetduring
+training, while the embeddings from SleepFM were only HavingdemonstratedthatSleepFMlearnsusefulrepresen-
+trainedonthetrainingset. Notably,themodelpre-trained tationsfromPSGclipsfortaskssuchasdemographicpre-
+withleave-one-outCLachievesthebestperformance. The dictionandclipretrieval,wenowevaluateperformanceon
+strongclip-levelperformanceindicatesSleepFM’sembed- clinically useful downstream tasks: sleep stage and SDB
+dingseffectivelycapturesalientdemographicinformation. classification. Manual sleep stage scoring and SDB clas-
+Analyzingtheperformancepermodality,wefindthatthe sification currently requires extensive analysis by trained
+BASsignalscontainthemostdistinctivefeaturesforthese technicians,motivatingautomatictechniques. Todoso,we
+tasksasshowninTable15andTable16. usedtheembeddingslearnedbySleepFMtotrainalogistic
+regressionmodelandclassifysleepstagesandSDBevents
+on a held-out test dataset. Sleep stage classification is a
+4.2.RetrievalAnalysis
+multi-classclassificationtask,with5classes: Wake,Stage
+TofurtherassessthequalityofSleepFM’sembeddings,we 1,Stage2,Stage3,andREM.Prevalenceofthesegroups
+assesseditsretrievalcapabilitiesbyretrievingonemodal- are0.21,0.07,0.51,0.09,and0.12respectively. SDBclas-
+ity’sclosestembeddingsfromthetestsetbasedonanother sificationisabinaryclassificationtask,withaprevalence
+modality’s embeddings. For instance, computing cosine of0.017. WecomparedSleepFMperformancewithend-to-
+similarity between BAS and ECG embeddings generated endCNNtrainedonallthreemodalities,forsleepstageand
+a ranked list, allowing us to gauge retrieval performance. SDBeventclassification.
+Evaluationwasmeasuredusingrecall@10andmedianrank
+The results for sleep stage classification are presented in
+metrics.
+Table6. Notably,acrossbothAUROCandAUPRCmetrics,
+thelogisticregressionmodeltrainedusingrepresentations
+• Recall@10: Measuresthetruepaireditem’sappear- fromSleepFMoutperformstheCNNtrainedend-to-endin
+ancewithinthetop10recommendations. Higherval- asupervisedmanner. Thissuperiorityholdstrueacrossall
+5
+
+
+--- PAGE 6 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table2.Ageclassificationmetricsformodelstrainedusingdifferenttypesofcontrastivelearning(CL).ThesupervisedCNNistrainedon
+theentire(pretraining+training)datasettoclassifyagegroups.Theleave-one-outandpairwisemodelsarelogisticregressionmodels
+trainedontheembeddingsgeneratedfromonlythetrainingdataset.Thereforeend-to-endCNNsawalldata11,261participantswhile
+pretrainedmodelsawdatafrom1,265participantsforsleepstageclassification.Prevalenceof0-18,18-35,35-50,and50+are0.17,0.18,
+0.28,and0.37respectively.±represents95%ConfidenceIntervals.
+AUROC AUPRC
+Leave-One-Out Pairwise SupervisedCNN Leave-One-Out Pairwise SupervisedCNN
+0-18 0.982 0.977 0.864 0.937 0.929 0.628
+±.001 ±.001 ±.001 ±.002 ±.004 ±.003
+18-35 0.852 0.809 0.683 0.549 0.458 0.308
+±.001 ±.002 ±.002 ±.003 ±.002 ±.002
+35-50 0.784 0.740 0.606 0.524 0.476 0.371
+±.001 ±.001 ±.003 ±.001 ±.002 ±.002
+50+ 0.915 0.880 0.745 0.856 0.796 0.619
+±.001 ±.001 ±.002 ±.002 ±.002 ±.002
+Avg 0.883 0.851 0.724 0.716 0.664 0.481
+Table3.Gender classification metrics for models trained using Table4.Retrievalonthetestsetformodeltrainedwithleave-one-
+differenttypesofCL.ThesupervisedCNNistrainedontheentire outcontrastivelearning(CL).RespisforRespiratory. Random
+(pretraining+training)datasettoclassifygender.Theleave-one- baselineforRecall@10=0.0001
+outandpairwisemodelsarelogisticregressionmodelstrainedon MedianRank Recall@10
+theembeddingsgeneratedfromonlythetrainingdataset.Therefore
+BAS ECG Resp BAS ECG Resp
+end-to-endCNNsaw11,261patientdatawhilepretrainedmodel
+saw 1,265 training data for SDB classification. Prevalence of BAS - 7 416 - 0.58 0.05
+femalegenderis0.41.±represents95%ConfidenceIntervals.
+ECG 13 - 19 0.46 - 0.39
+AUROC AUPRC Resp 400 21 - 0.05 0.38 -
+Leave-One-OutCL 0.850 0.774
+±.001 ±.002
+Table5.Retrievalonthetestsetformodeltrainedwithpairwise
+PairwiseCL 0.810 0.731
+±.001 ±.002
+contrastivelearning(CL).RespisforRespiratory.Randombase-
+SupervisedCNN 0.690 0.614
+±.002 ±.002 lineforRecall@10=0.0001
+MedianRank Recall@10
+sleepstageclassesaswellasonaggregatedclassmetrics. BAS ECG Resp BAS ECG Resp
+Model pretrained with leave-one-out CL performs better BAS - 1 6 - 0.74 0.58
+thantheonepretrainedwithpairwiseacrossbothmetrics. ECG 1 - 2 0.82 - 0.81
+Resp 5 2 - 0.60 0.82 -
+Similarly,theSDBclassificationmetrics,displayedinTa-
+ble7,underscoreourapproach’ssuperiorityoversupervised
+CNNmodels. Wefindthatthemodelpretrainedwithleave-
+one-outCLsignificantlyoutperformsthemodelpretrained Additionally, we stratified the performance of our model
+withpairwise. Whileourclassificationperformancealigns acrossdifferentageandgendergroupstoensuretherewere
+withexistingmethods(Salarietal.,2022;Lietal.,2022), no discrepancies across demographics. In Table 19 and
+ourstudyemphasizes thepotentialofmulti-modalCLin Table20,weseethatbothourpretrainedmodelsperform
+thesespecificdomains. consistently well across all age groups with minor varia-
+tion,especiallyamongthe50+agegroup. Acrossgenders,
+Furthermore,wesoughttounderstandtheperformanceof
+the performance was similarly consistent with even less
+individualmodalityembeddingswhentrainedseparatelyfor
+variation. ForSDBclassification,theperformancewascon-
+thesetasks. Table11andTable12,exhibittheresultsfor
+sistentlystrongacrossageandgendergroups,exceptforthe
+sleepstagingandSDBclassificationusingeachmodality’s
+0-18agegroup,whichexhibitedslightlylowerperformance
+embeddingsindependently. Asexpected,modeltrainedon
+thanothergroupsasshowninTables21and22.
+BASembeddingsexcelinsleepstageclassification,while
+themodeltrainedonrespiratoryembeddingsperformno-
+4.4.Few-ShotEvaluation
+tablywellinSDBeventdetection,asthesearethemodali-
+tiescommonlyusedfortherespectivetasks. Surprisingly, Tounderstandhowourmodelperformswhenweonlyhave
+acrossbothtasks,embeddingsfromallmodalitiesdemon- a small sample size available to train a model for down-
+strated reasonably high performance, specially for sleep streamapplication,weperformedafew-shotperformance
+stageclassification. evaluation. To do so, we steadily increased the number
+6
+
+
+--- PAGE 7 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table6.Sleepstageclassificationmetricsformodelstrainedusingdifferenttypesofcontrastivelearning(CL).Baselinehereisan
+end-to-endCNNtrainedontheentire(pretraining+training)datasettoclassifysleepstages.Theleave-one-outandpairwisemodelsare
+logisticregressionmodelstrainedontheembeddingsgeneratedfromonlythetrainingdataset.Thereforeend-to-endCNNsaw11,261
+patientdatawhilepretrainedmodelsaw1,265trainingdataforsleepstageclassification.PrevalenceofWake,Stage1,Stage2,Stage3,
+andREMare0.21,0.07,0.51,0.09,and0.12respectively.±represents95%ConfidenceIntervals.
+AUROC AUPRC
+Leave-One-Out Pairwise SupervisedCNN Leave-One-Out Pairwise SupervisedCNN
+Wake 0.945 0.930 0.869 0.862 0.827 0.711
+±.001 ±.001 ±.001 ±.002 ±.002 ±.002
+Stage1 0.814 0.782 0.706 0.233 0.186 0.130
+±.002 ±.002 ±.002 ±.003 ±.002 ±.002
+Stage2 0.891 0.861 0.840 0.876 0.849 0.822
+±.001 ±.001 ±.001 ±.001 ±.001 ±.001
+Stage3 0.928 0.918 0.918 0.676 0.615 0.695
+±.001 ±.001 ±.001 ±.003 ±.003 ±.002
+REM 0.951 0.891 0.878 0.778 0.565 0.540
+±.001 ±.001 ±.001 ±.003 ±.002 ±.003
+Avg 0.906 0.876 0.842 0.685 0.608 0.579
+0.9
+0.8
+0.7
+0.6
+0.5
+1 2 4 8 163264128 1265
+Number of Patients
+CORUA
+0.7
+0.6
+0.5
+0.4
+Leave-One-Out 0.3
+Pairwise
+Supervised-CNN
+0.2
+1 2 4 8 163264128 1265
+Number of Patients
+(a)SleepStagesAUROC
+CRPUA
+0.9
+0.8
+0.7
+0.6
+Leave-One-Out
+Pairwise 0.5
+Supervised-CNN
+1 2 4 8 163264128 1265
+Number of Patients
+(b)SleepStagesAUPRC
+CORUA
+0.7
+0.6
+0.5
+0.4
+0.3
+Leave-One-Out 0.2
+Pairwise 0.1
+Supervised-CNN
+0.0
+1 2 4 8 163264128 1265
+Number of Patients
+(c)SDBAUROC
+CRPUA
+Leave-One-Out
+Pairwise
+Supervised-CNN
+(d)SDBAUPRC
+Figure2.FewShotEvaluation.Thex-axisrepresentsnumberofpatientsthatthemodelwastrainedonandy-axisrepresentsevaluation
+metricsAUROCandAUPRC.Incaseofpairwiseandleave-one-out,weselectembeddingsfromknumberofpatientstotrainalogistic
+regressionmodel.Thelargestnumberofpatientsused(1265)isthetotalsizeofourtrainingdataset.IncaseofsupervisedCNN,wetrain
+themodelend-to-endonknumberofpatientstoclassifyeithersleepstagesorSDB.Testingisdoneontheentiretestset.Foreachshot,
+weaveragetheperformanceacross3replicates.
+sizeofthefulltrainingset. ForthesupervisedCNN,few-
+Table7.SDBclassificationmetricsformodelstrainedusingdiffer-
+shotexamplesaretheonlytrainingexamplesseenbythe
+enttypesofcontrastivelearning(CL).Baselinehereisasupervised
+model. Forthepretrainedmodels,weuseembeddingsof
+CNNtrainedontheentire(pretraining+training)datasettoclas-
+thesefew-shotexamplestotrainalogisticregressionmodel.
+sify SDB. The leave-one-out and pairwise models are logistic
+regressionmodelstrainedontheembeddingsgeneratedfromonly
+ForbothAUROCandAUPRC,weseethatacrossalltrain-
+thetrainingdataset. Thereforeend-to-endCNNsaw11,261pa-
+ingsetsizes,SleepFM significantlyoutperformsbaseline
+tientdatawhilepretrainedmodelsaw1,265trainingdataforSDB
+supervisedCNNmodelforbothsleepstageandSDBclas-
+classification. PrevalenceofSDBeventis0.017. ±represents
+sification (Figure 2). Notably, the leave-one-out model
+95%ConfidenceIntervals.
+significantlyoutperformspairwisemodelacrossalltraining
+AUROC AUPRC
+setsizes,especiallyforSDBclassification.
+Leave-One-OutCL 0.941 0.711
+±.002 ±.006
+PairwiseCL 0.902 ±.003 0.586 ±.007 4.5.BenefitofMulti-ModalPretraining
+SupervisedCNN 0.843 0.555
+±.002 ±.005
+Finally,weconductedablationstudiestoanalyzehowthe
+numberandtypeofmodalitiesusedduringpretrainingim-
+pactsdownstreamtaskperformance. Wepretrainedmod-
+of participants k that each model sees from k = 1 to the
+elsusing3modalities(BAS-ECG-Respiratorysignals),2
+full training dataset, and recorded the model’s AUROC
+modalities (BAS-Respiratory and BAS-ECG, and ECG-
+and AUPRC at each k. Note that each participant con-
+Respiratory), and individual modalities (BAS and Respi-
+tributes multiple training clips. We consider values of
+ratory)withCL.The3-modalitymodelusedleave-one-out
+k ∈ {1,2,4,8,16,32,64,128,1265}, where 1265 is the
+7
+
+
+--- PAGE 8 ---
+SleepFM:Multi-ModalSleepFoundationModel
+0.9
+0.8
+0.7
+0.6
+1 2 4 8 163264128 1265
+Number of Patients
+CORUA
+0.6
+0.5
+0.4
+BAS-ECG-RESP
+BAS-ECG
+BAS-RESP 0.3
+BAS
+0.2
+1 2 4 8 163264128 1265
+Number of Patients
+(a)SleepStagesAUROC
+CRPUA
+0.9
+0.8
+0.7
+BAS-ECG-RESP
+BAS-ECG
+0.6 BAS-RESP
+BAS
+0.5
+1 2 4 8 163264128 1265
+Number of Patients
+(b)SleepStagesAUPRC
+CORUA
+0.7
+0.6
+0.5
+0.4
+0.3
+BAS-ECG-RESP
+Resp-ECG 0.2
+RESP-BAS 0.1
+RESP
+0.0
+1 2 4 8 163264128 1265
+Number of Patients
+(c)SDBAUROC
+CRPUA
+BAS-ECG-RESP
+Resp-ECG
+RESP-BAS
+RESP
+(d)SDBAUPRC
+Figure3.Ablationfewshotplot.Thex-axisrepresentsnumberofpatientsthatthemodelwastrainedonandy-axisrepresentsperformance
+metricsAUROCandAUPRC.Weselectembeddingfromknumberofpatientstotrainalogisticregressionmodel.Thelastshot(1265)is
+thetotalsizeofourtrainingdataset.Theothermodels(Resp-ECG,Resp-BAS,BAS-ECG)representsthemodelpretrainedusingonly2
+modalities.Finally,BASandRESPrepresentsmodelspretrainedwithonly1modality.Foreachshot,weaveragetheperformanceacross
+3replicates.
+CL,whichwasourbestperformingmodel. The2-modality 2018). SleepFMwaspretrainedexclusivelyonourinternal
+models used a similar contrastive approach, pairing clips sleepdata. Forcomparison, wealsotrainedasupervised
+fromdifferentmodalitiesinthesame30-secondwindowas CNN end-to-end on the external dataset to classify sleep
+positives. Forsinglemodalities,adjacent30-secondclips stages.
+weretreatedaspositivepairs.
+Table8presentstheresultsofthisexternalvalidation. The
+Forevaluation,weextractedBASembeddingsfromallpre- testsetcomprised100participants,andthemetricsreported
+trainedmodelsandtrainedlogisticregressionclassifiersfor includeAUROC,AUPRC,andF1score,eachaccompanied
+sleep stage classification, a common application of BAS by95%confidenceintervals.
+signals. Similarly,forSDBdetection,weextractedrespira-
+TheSleepFMdemonstratedsuperiorperformanceacrossall
+toryembeddingsandtrainedlogisticregressionmodels,as
+sleepstagescomparedtothesupervisedCNN.Specifically,
+respiratorydataistypicallyusedforthistask. Thisenables
+SleepFM achieved an overall macro-average AUROC of
+afaircomparisontoevaluatewhichpretrainingstrategypro-
+0.924,AUPRCof0.759,andF1scoreof0.700. Incontrast,
+ducesthemostusefulembeddingsforthesemodalitiesand
+thesupervisedCNN’smacro-averagemetricswerelower,
+applications.
+withanAUROCof0.843,AUPRCof0.553,andF1score
+TheresultofourexperimentisshowninFigure3.Wefound of0.363.
+pretrainingwith3modalitiesclearlyhelpedperformance
+TheprimarytakeawayfromtheseresultsisthatSleepFM
+acrossbothsleepstageandSDBscoringtasks,withthe3-
+generalizeswelltoexternalsites,despitenotbeingexposed
+modalitymodelachievinghigherAUPRCforSDBdetection
+to the dataset during the pretraining phase. Additionally,
+inparticular. TheBAS-ECGandRespiratory-ECGmodels
+theconfigurationofEEGchannelsdiffersbetweenoursite
+also performed well, suggesting ECG helps enrich repre-
+andtheCinCdataset. Despitethesedifferences,ourmodel
+sentationsofothersignalsduringpretraining. Incontrast,
+demonstrated robust generalization and adaptation to the
+singlemodalitymodelsconsistentlyunderperformed. Inter-
+newsite,showcasingitspotentialforbroaderapplicability
+estingly,certainpairedmodalitieslikeBAS-Respiratorydid
+beyondtheconditionsforwhichitwasspecificallytrained.
+notimproveperformanceasmuchasmodelsincorporating
+This highlights the strength of our approach in handling
+ECG.Thisindicatesthemodalitiespairedduringpretrain-
+variationsindataacquisitionprotocolsacrossdifferentsites,
+ingsignificantlyimpactdownstreamutilityofembeddings.
+acrucialfactorforthereal-worlddeploymentofsleepanal-
+Further analysis of how different modality combinations
+ysismodels.
+impactrepresentationlearningmeritsexplorationinfuture
+work.
+5.DiscussionandConclusion
+4.6.ExternalValidation
+Our study leverages multi-modal PSG data and represen-
+Toevaluatetheperformanceofourmodel,SleepFM,ondata tationlearningtechniquestoenhancetheidentificationof
+fromanexternalsitenotseenduringthepretrainingstage, sleepevents,contributingsignificantlytothefieldofsleep
+weutilizedthepubliclyavailabledatasetfromthePhysionet medicine. Theprimarycontributionsincludethedevelop-
+ComputinginCardiology2018Challenge(Ghassemietal., mentandevaluationofamulti-modalcontrastivelearning
+8
+
+
+--- PAGE 9 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table8.ExternalvalidationofSleepFMonPhysionetComputinginCardiology2018challenge(Ghassemietal.,2018).SleepFMwas
+onlypretrainedonourinternalsleepdata.SupervisedCNNwastrainedendtoendontheexternaldatabasetoclassifysleepstages.Test
+size:100participants.±represents95%confidenceintervals.
+SleepFM SupervisedCNN
+AUROC AUPRC F1 AUROC AUPRC F1
+Wake 0.966 0.867 0.790 0.867 0.614 0.514
+±.001 ±.003 ±.001 ±.002 ±.004 ±.002
+Stage1 0.830 0.471 0.439 0.709 0.305 0.006
+±.004 ±.002 ±.002 ±.003 ±.002 ±.000
+Stage2 0.902 0.857 0.793 0.843 0.784 0.694
+±.002 ±.004 ±.001 ±.001 ±.004 ±.001
+Stage3 0.971 0.821 0.743 0.925 0.471 0.244
+±.001 ±.004 ±.001 ±.002 ±.002 ±.001
+REM 0.950 0.778 0.717 0.872 0.592 0.355
+±.002 ±.005 ±.002 ±.003 ±.002 ±.001
+MacroAvg 0.924 0.759 0.700 0.843 0.553 0.363
+(CL)modelonadatasetcomprising14,000participantsand site,multi-modalfoundationmodelforsleepusingdiverse
+over100,000hoursofsleepdata. PSGdata,(2)carefulselectionandweightingofmodalities
+and handling missing channels, (3) expanding evaluation
+Our model demonstrated strong performance across vari-
+tomoreclinicallymeaningfultasksbeyondsleepstageand
+oustasks,includingdemographicattributesclassification,
+SDB,and(4)experimentingwithmultipleotherSSLmeth-
+retrieval analysis, sleep stage classification, and sleep-
+ods.
+disordered breathing (SDB) event detection, outperform-
+ing end-to-end trained CNNs. The methodology centers
+ontwoCLapproaches: leave-one-outandpairwise. Both Acknowledgements
+approacheseffectivelyunifiedBAS,ECG,andrespiratory
+RT gratefully acknowledges funding from the Knight-
+signalrepresentations,provingeffectiveinlimiteddatasce-
+Hennessy Graduate Fellowship. Special thanks to the
+narios. Notably,wefoundthatpairwiseCLisbettersuited
+reviewers for their insightful comments and suggestions,
+forcross-modalityretrieval,whileleave-one-outCLexcels
+whichsignificantlyimprovedthispaper.
+inlearningrepresentationsfordownstreamsleepstageand
+SDB classification. This superiority might be attributed
+toleave-one-modality-outtraining,whichencouragesthe ImpactStatement
+modeltolearnamoreintegratedrepresentationofdifferent
+Our work develops an initial foundation model for sleep,
+modalities.
+leveragingmulti-modalPSGdatafrom14,000sleepstudies.
+Moreover,theexternalvalidationofSleepFMhighlightsthe Werigorouslytrainedandevaluatedagainstclinicallyrele-
+potentialofourapproachtobebroadlyappliedindiverse vantapplicationstodemonstrateimpact. Toensurereplica-
+clinicalsettings, enhancingitsutilityandimpactinsleep bility,wereleaseoursourcecode. Allofthedatausedhave
+researchandmedicine. Thisunderscorestherobustnessand been deidentified to protect participant Protected Health
+versatilityofourmodel,suggestingitscapabilitytohandle Information(PHI).
+variationsindataacquisitionprotocolsacrossdifferentsites,
+Whileourmodelshowspromise,weacknowledgetheim-
+acrucialfactorforreal-worlddeployment.
+portanceofreliability,transparency,andmitigatingpotential
+Future Work. Despite its achievements, our study has biasesformedicalAI.Asdeeplearningisincreasinglyde-
+limitations. Weprimarilytrainedandevaluatedononein- velopedanddeployedinsleepmedicine,maintaininghigh
+stitution’s sleep data; extensively evaluating the model’s ethical standards around consent, explainability, and ac-
+generalizabilitytootherinstitutionsisanimportantdirec- countabilitywillbeimperative. Webelievecenteringacces-
+tionoffuturework. Weshowedthatourmodelworkswell sibility,responsibility,andsocialgoodwillallowthesetech-
+acrossdifferentgenderandagegroups,whichisapromis- nologiestoresponsiblytransformmedicalpractice. Overall,
+ingsignofitsrobustness. Additionally,whilewefocused ourworkisasteptowardusingAItocaptureandunlock
+on sleep stage and SDB detection, exploring other tasks therichnessofsleepdatatobetterunderstandandimprove
+likearousaldetection,periodiclegmovements,anddiseases ourhealth.
+such as narcolepsy could provide a more comprehensive
+clinicalassessment. Moreover,itwillbeinterestingtotry
+References
+ourmultipleotherself-supervisedlearning(SSL)methods,
+to see which method actually performs best for this task. Bannur,S.,Hyland,S.,Liu,Q.,Perez-Garcia,F.,Ilse,M.,
+Ourgoalforfutureworkinclude: (1)pretrainingamulti- Castro, D. C., Boecking, B., Sharma, H., Bouzid, K.,
+9
+
+
+--- PAGE 10 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Thieme,A.,etal. Learningtoexploittemporalstructure He, K., Fan, H., Wu, Y., Xie, S., and Girshick, R. Mo-
+forbiomedicalvision-languageprocessing. InProceed- mentumcontrastforunsupervisedvisualrepresentation
+ingsoftheIEEE/CVFConferenceonComputerVision learning. InProceedingsoftheIEEE/CVFconferenceon
+andPatternRecognition,pp.15016–15027,2023. computervisionandpatternrecognition,pp.9729–9738,
+2020.
+Berry,R.B.,Brooks,R.,Gamaldo,C.E.,Harding,S.M.,
+Marcus,C.,Vaughn,B.V.,etal. TheAASMmanualfor Huang,S.-C.,Shen,L.,Lungren,M.P.,andYeung,S. Glo-
+the scoring of sleep and associated events. Rules, Ter- ria: A multimodal global-local representation learning
+minologyandTechnicalSpecifications,Darien,Illinois, frameworkforlabel-efficientmedicalimagerecognition.
+AmericanAcademyofSleepMedicine,176:2012,2012. InProceedingsoftheIEEE/CVFInternationalConfer-
+enceonComputerVision,pp.3942–3951,2021.
+Boashash,B.andOuelha,S. Automaticsignalabnormal-
+itydetectionusingtime-frequencyfeaturesandmachine
+Khosla,P.,Teterwak,P.,Wang,C.,Sarna,A.,Tian,Y.,Isola,
+learning:AnewbornEEGseizurecasestudy.Knowledge-
+P.,Maschinot,A.,Liu,C.,andKrishnan,D. Supervised
+BasedSystems,106:38–50,2016.
+contrastive learning. Advances in neural information
+processingsystems,33:18661–18673,2020.
+Boecking, B., Usuyama, N., Bannur, S., Castro, D. C.,
+Schwaighofer,A.,Hyland,S.,Wetscherek,M.,Naumann,
+Kiyasseh,D.,Zhu,T.,andClifton,D.A. Clocs: Contrastive
+T.,Nori,A.,Alvarez-Valle,J.,etal. Makingthemostof
+learning of cardiac signals across space, time, and pa-
+text semantics to improve biomedical vision–language
+tients. InInternationalConferenceonMachineLearning,
+processing. InEuropeanconferenceoncomputervision,
+pp.5606–5615.PMLR,2021.
+pp.1–21.Springer,2022.
+Kryger,M.H.,Roth,T.,andDement,W.C. Principlesand
+Brink-Kjaer, A., Leary, E. B., Sun, H., Westover, M. B.,
+practiceofsleepmedicinefifthedition,2010.
+Stone,K.L.,Peppard,P.E.,Lane,N.E.,Cawthon,P.M.,
+Redline,S.,Jennum,P.,etal. Ageestimationfromsleep
+Lalam, S. K., Kunderu, H. K., Ghosh, S., Kumar, H.,
+studiesusingdeeplearningpredictslifeexpectancy. NPJ
+Awasthi,S.,Prasad,A.,Lopez-Jimenez,F.,Attia,Z.I.,
+digitalmedicine,5(1):103,2022.
+Asirvatham,S.,Friedman,P.,etal. ECGrepresentation
+learningwithmulti-modalEHRdata. Transactionson
+Chen, T., Kornblith, S., Norouzi, M., and Hinton, G. A
+MachineLearningResearch,2023.
+simpleframeworkforcontrastivelearningofvisualrep-
+resentations. In International conference on machine
+Leary, E. B., Stone, K. L., and Mignot, E. Living to
+learning,pp.1597–1607.PMLR,2020.
+dream—reply. JAMAneurology,78(4):495–496,2021.
+Ghassemi,M.M.,Moody,B.E.,Lehman,L.-W.H.,Song,
+Li,C.,Qi,Y.,Ding,X.,Zhao,J.,Sang,T.,andLee,M. A
+C., Li, Q., Sun, H., Mark, R. G., Westover, M. B.,
+deeplearningmethodapproachforsleepstageclassifi-
+and Clifford, G. D. You snooze, you win: the phys-
+cation with eeg spectrogram. International Journal of
+ionet/computingincardiologychallenge2018. In2018
+EnvironmentalResearchandPublicHealth,19(10):6322,
+ComputinginCardiologyConference(CinC),volume45,
+2022.
+pp.1–4.IEEE,2018.
+Lu,M.Y.,Chen,B.,Zhang,A.,Williamson,D.F.,Chen,
+Gopal,B.,Han,R.,Raghupathi,G.,Ng,A.,Tison,G.,and
+R.J.,Ding,T.,Le,L.P.,Chuang,Y.-S.,andMahmood,
+Rajpurkar,P. 3kg: Contrastivelearningof12-leadelec-
+F. Visuallanguagepretrainedmultipleinstancezero-shot
+trocardiogramsusingphysiologically-inspiredaugmen-
+transferforhistopathologyimages. InProceedingsofthe
+tations. InMachineLearningforHealth,pp.156–167.
+IEEE/CVFConferenceonComputerVisionandPattern
+PMLR,2021.
+Recognition,pp.19764–19775,2023.
+Haidar, R., McCloskey, S., Koprinska, I., and Jeffries, B.
+Convolutional neural networks on multiple respiratory Michielli,N.,Acharya,U.R.,andMolinari,F. Cascaded
+channelstodetecthypopneaandobstructiveapneaevents. lstmrecurrentneuralnetworkforautomatedsleepstage
+In2018InternationalJointConferenceonNeuralNet- classificationusingsingle-channeleegsignals. Comput-
+works(IJCNN),pp.1–7.IEEE,2018. ersinbiologyandmedicine,106:71–81,2019.
+Hassan, A. R. and Bhuiyan, M. I. H. Automated identi- Mostafa,S.S.,Mendonca,F.,Ravelo-Garcia,A.G.,Julia´-
+fication of sleep states from EEG signals by means of Serda´,G.G.,andMorgado-Dias,F. Multi-objectivehy-
+ensembleempiricalmodedecompositionandrandomun- perparameter optimization of convolutional neural net-
+dersamplingboosting. Computermethodsandprograms workforobstructivesleepapneadetection. IEEEAccess,
+inbiomedicine,140:201–210,2017. 8:129586–129599,2020.
+10
+
+
+--- PAGE 11 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Mousavi,S.,Afghah,F.,andAcharya,U.R. Sleepeegnet: Sandler, M., Howard, A., Zhu, M., Zhmoginov, A., and
+Automatedsleepstagescoringwithsequencetosequence Chen,L.-C. Mobilenetv2: Invertedresidualsandlinear
+deeplearningapproach. PloSone,14(5):e0216456,2019. bottlenecks. InProceedingsoftheIEEEconferenceon
+computervisionandpatternrecognition,pp.4510–4520,
+Nassi, T. E., Ganglberger, W., Sun, H., Bucklin, A. A.,
+2018.
+Biswal,S.,vanPutten,M.J.,Thomas,R.J.,andWest-
+over, M. B. Automated scoring of respiratory events Seo, H., Back,S., Lee, S., Park, D.,Kim, T.,andLee, K.
+in sleep with a single effort belt and deep neural net- Intra-andinter-epochtemporalcontextnetwork(iitnet)
+works. IEEEtransactionsonbiomedicalengineering,69 usingsub-epochfeaturesforautomaticsleepscoringon
+(6):2094–2104,2021. raw single-channel eeg. Biomedical signal processing
+andcontrol,61:102037,2020.
+Nørskov, A.V., Zahid, A.N., andMørup, M. CSLP-AE:
+Acontrastivesplit-latentpermutationautoencoderframe- Sors, A., Bonnet, S., Mirek, S., Vercueil, L., and Payen,
+workforzero-shotelectroencephalographysignalconver- J.-F. A convolutional neural network for sleep stage
+sion. arXivpreprintarXiv:2311.07788,2023. scoringfromrawsingle-channelEEG.BiomedicalSignal
+ProcessingandControl,42:107–114,2018.
+Oord,A.v.d.,Li,Y.,andVinyals,O. Representationlearn-
+ing with contrastive predictive coding. arXiv preprint Stephansen, J. B., Olesen, A. N., Olsen, M., Ambati, A.,
+arXiv:1807.03748,2018. Leary,E.B.,Moore,H.E.,Carrillo,O.,Lin,L.,Han,F.,
+Yan, H., etal. Neuralnetworkanalysisofsleepstages
+Ouyang, D., Theurer, J., Stein, N. R., Hughes, J. W.,
+enablesefficientdiagnosisofnarcolepsy. Naturecommu-
+Elias, P., He, B., Yuan, N., Duffy, G., Sandhu, R. K.,
+nications,9(1):5229,2018.
+Ebinger, J., et al. Electrocardiographic deep learning
+forpredictingpost-proceduralmortality. arXivpreprint Supratak,A.,Dong,H.,Wu,C.,andGuo,Y. Deepsleepnet:
+arXiv:2205.03242,2022. Amodelforautomaticsleepstagescoringbasedonraw
+single-channelEEG. IEEETransactionsonNeuralSys-
+Perslev,M.,Darkner,S.,Kempfner,L.,Nikolic,M.,Jennum,
+temsandRehabilitationEngineering,25(11):1998–2008,
+P.J.,andIgel,C. U-sleep: Resilienthigh-frequencysleep
+2017.
+staging.NPJdigitalmedicine,4(1),72,2021.
+Tan, M. and Le, Q. Efficientnet: Rethinking model scal-
+Phan,H.,Andreotti,F.,Cooray,N.,Che´n,O.Y.,andDeVos,
+ingforconvolutionalneuralnetworks. InInternational
+M. Seqsleepnet: end-to-endhierarchicalrecurrentneu-
+conferenceonmachinelearning,pp.6105–6114.PMLR,
+ral network for sequence-to-sequence automatic sleep
+2019.
+staging. IEEETransactionsonNeuralSystemsandReha-
+bilitationEngineering,27(3):400–410,2019. Tripathy,R.,Gajbhiye,P.,andAcharya,U.R. Automated
+sleepapneadetectionfromcardio-pulmonarysignalusing
+Phan, H., Che´n, O. Y., Tran, M. C., Koch, P., Mertins,
+bivariatefastandadaptiveemdcoupledwithcrosstime–
+A., and De Vos, M. Xsleepnet: Multi-view sequential
+frequencyanalysis. ComputersinBiologyandMedicine,
+modelforautomaticsleepstaging. IEEETransactionson
+120:103769,2020.
+PatternAnalysisandMachineIntelligence,44(9):5903–
+5915,2021. Tsinalis,O.,Matthews,P.,Guo,Y.,andZafeiriou,S. Auto-
+maticsleepstagescoringwithsingle-channelEEGusing
+Radford,A.,Kim,J.W.,Hallacy,C.,Ramesh,A.,Goh,G.,
+convolutionalneuralnetworks.arxiv2016.arXivpreprint
+Agarwal,S.,Sastry,G.,Askell,A.,Mishkin,P.,Clark,J.,
+arXiv:1610.01683.
+etal. Learningtransferablevisualmodelsfromnatural
+language supervision. In International conference on Tsinalis,O.,Matthews,P.M.,andGuo,Y. Automaticsleep
+machinelearning,pp.8748–8763.PMLR,2021. stagescoringusingtime-frequencyanalysisandstacked
+sparseautoencoders. Annalsofbiomedicalengineering,
+Raghu, A., Chandak, P., Alam, R., Guttag, J., and Stultz,
+44:1587–1597,2016.
+C. Contrastivepre-trainingformultimodalmedicaltime
+series. In NeurIPS 2022 Workshop on Learning from Urtnasan,E.,Park,J.-U.,andLee,K.-J.Automaticdetection
+TimeSeriesforHealth,2022. ofsleep-disorderedbreathingeventsusingrecurrentneu-
+ralnetworksfromanelectrocardiogramsignal. Neural
+Salari,N.,Hosseinian-Far,A.,Mohammadi,M.,Ghasemi,
+computingandapplications,32:4733–4742,2020.
+H.,Khazaie,H.,Daneshkhah,A.,andAhmadi,A. De-
+tectionofsleepapneausingmachinelearningalgorithms Worley,S.L. Theextraordinaryimportanceofsleep: the
+basedonECGsignals: Acomprehensivesystematicre- detrimentaleffectsofinadequatesleeponhealthandpub-
+view. Expert Systems with Applications, 187:115950, licsafetydriveanexplosionofsleepresearch. Pharmacy
+2022. andTherapeutics,43(12):758,2018.
+11
+
+
+--- PAGE 12 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Yeo,M.,Byun,H.,Lee,J.,Byun,J.,Rhee,H.-Y.,Shin,W.,
+andYoon,H. Respiratoryeventdetectionduringsleep
+usingelectrocardiogramandrespiratoryrelatedsignals:
+Usingpolysomnogramandpatch-typewearabledevice
+data.IEEEJournalofBiomedicalandHealthInformatics,
+26(2):550–560,2021.
+Yildirim,O.,Baloglu,U.B.,andAcharya,U.R. Adeep
+learningmodelforautomatedsleepstagesclassification
+usingPSGsignals.Internationaljournalofenvironmental
+researchandpublichealth,16(4):599,2019.
+Yu, H., Liu, D., Zhao, J., Chen, Z., Gou, C., Huang, X.,
+Sun,J.,andZhao,X. Asleepapnea-hypopneasyndrome
+automatic detection and subtype classification method
+based on LSTM-CNN. Biomedical Signal Processing
+andControl,71:103240,2022.
+Zahid,A.N.,Jennum,P.,Mignot,E.,andSorensen,H.B.
+MSED:Amulti-modalsleepeventdetectionmodelfor
+clinicalsleepanalysis. IEEETransactionsonBiomedical
+Engineering,2023.
+Zhang,Y.,Jiang,H.,Miura,Y.,Manning,C.D.,andLan-
+glotz, C.P. Contrastivelearningofmedicalvisualrep-
+resentations from paired images and text. In Machine
+LearningforHealthcareConference,pp.2–25.PMLR,
+2022.
+Zhao, X., Wang, X., Yang, T., Ji, S., Wang, H., Wang,
+J.,Wang,Y.,andWu,Q. Classificationofsleepapnea
+basedonEEGsub-bandsignalcharacteristics. Scientific
+Reports,11(1):5824,2021.
+12
+
+
+--- PAGE 13 ---
+SleepFM:Multi-ModalSleepFoundationModel
+A.Appendix
+A.1.DataDescription
+InFigure4,weseea30secondclipofourrawdataforall19channelsacross3modalities. Figure5showsthedistribution
+ofvariouseventsacrosstheentiresleepdurationforaparticipant. Toensuretheprotectionofparticipants’ProtectedHealth
+Information(PHI),alldatahasbeende-identified.
+Figure4.30-secondclipofrawpatientdata.Thex-axisistimeandy-axisisdifferentchannelsacrossallthreemodalities:BAS,ECG,
+andRespiratory.
+A.2.EmbeddingModel
+OurEfficientNetmodelarchitectureisdividedintomultiplestages. Thefirststage(Stage1)consistsofaConv1dlayer
+withaninputchannelsizeofin channelandanoutputchannelsizeof32. Thislayerusesa3×1kernel,astrideof2,
+paddingof1,anddilationof1.
+AftertheConv1dlayer,wehaveabatchnormalizationlayerwithanoutputchannelsizeof32aswell. Followingthis,
+stages2to8consistofMobileNetblocks,eachofwhichstacktogethermultipleBottleneckmodules. Theoutputchannel
+sizesforeachstagearespecifiedbythechannelsparameter,withthedefaultsettingbeing[32, 16, 24, 40, 80,
+112, 192, 320, 1280]. However,thesechannelsizesarereducedcomparedtotheoriginalEfficientNettoimprove
+runtimeefficiencyandminimizecomplexityforthetime-seriesdataprocessingtask.
+Thedepthofthemodel, i.e., thenumberofBottleneckmodulesineachMobileNetblock(i.e. layers)ineachstage, is
+controlledbythedepthparameter. Thenumberoflayersineachstageare[1, 2, 2, 3, 3, 3, 3].
+Themodelincludestwopoolinglayerswithakernelsizeof3,astrideof1,andpaddingof1. Thefirstmax-poolinglayeris
+appliedafterStage3,andthesecondadaptiveaveragepoolinglayerisappliedafterStage9. Adropoutlayerwitharateof
+0.5isusedbeforethefinalfullyconnectedoutputlayerandReLUactivationforregularization. Dropoutlayersarealsoused
+ineachoftheBottleneckmodules.
+TheexpansionfactorforthebottleneckblockswithintheMBConvmodulesissetto6,aspertheMobileNetV2architecture
+(Sandleretal.,2018). ForadetailedunderstandingofthearchitectureoftheBottleneckandEfficientNetmodel,werefer
+readerstotheoriginalpapers(Sandleretal.,2018;Tan&Le,2019).
+13
+
+
+--- PAGE 14 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Figure5.Distributionofeventsacrossanentirepatientsleep. Thex-axisrepresentsapproximately8hoursinseconds,andy-axisis
+distributionofdifferentsleepeventsduringtheentiredurationofsleep.N1,N2,N3referstoSleepStage1,2,and3respectively.Obs
+HypopneaandObsSDBaretypesofSDBs.
+A.3.TrainingDetails
+AllmodeltrainingwasexecutedonasingleNVIDIATeslaV100SGPUwith32GBofmemory. Eachpretrainingepoch
+consumedapproximately4hours,whilebaselinesupervisedtrainingrequiredroughly2hoursonthesameGPU.Table9
+and10liststhehyperparametersweusedinourtrainingruns.
+Table9. HyperparametersforPretrainingandend-to-endCNNtraining
+Hyperparameter Value
+LearningRate 0.01
+BatchSize 32
+lrstepperiod 5
+epochs 20
+momentum 0.9
+Temperature(init) 0.0
+Dropout 0.5
+A.4.AdditionalResults
+14
+
+
+--- PAGE 15 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table10. Hyperparametersforlogisticregressiontrainingduringdownstreamclassifications.
+Hyperparameter Value
+penalty L2
+maxiter 10000
+classweight balanced
+solver lbfgs
+Table11.Sleep stageclassification metricsfor modeltrained with leave-one-out CL.After having trained themodel withall three
+modalities,weextractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifysleepstages.
+±represents95%confidenceintervals.
+AUROC AUPRC
+ECG Respiratory BAS ECG Respiratory BAS
+Wake 0.934 0.846 0.942 0.829 0.652 0.857
+±.001 ±.001 ±.001 ±.004 ±.003 ±.002
+Stage1 0.786 0.676 0.801 0.193 0.127 0.211
+±.002 ±.002 ±.002 ±.002 ±.001 ±.003
+Stage2 0.874 0.728 0.888 0.860 0.708 0.873
+±.001 ±.001 ±.001 ±.001 ±.001 ±.001
+Stage3 0.919 0.788 0.927 0.638 0.307 0.679
+±.001 ±.001 ±.001 ±.003 ±.002 ±.002
+REM 0.939 0.789 0.944 0.745 0.388 0.724
+±.001 ±.001 ±.001 ±.003 ±.003 ±.003
+MacroAvg 0.891 0.765 0.900 0.436 0.484 0.669
+Table12.SDBclassificationmetricsformodeltrainedwithleave-one-outCL.Afterhavingtrainedthemodelwithallthreemodalities,
+weextractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifySDB.±represents95%
+confidenceintervals.
+ECG Respiratory BAS
+AUROC 0.735 0.925 0.735
+±.004 ±.002 ±.004
+AUPRC 0.040 0.697 0.040
+±.001 ±.006 ±.001
+Table13.SleepstageclassificationmetricsformodeltrainedwithpairwiseCL.Afterhavingtrainedthemodelwithallthreemodalities,
+weextractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifysleepstages.±represents
+95%confidenceintervals.
+AUROC AUPRC
+ECG Respiratory BAS ECG Respiratory BAS
+Wake 0.917 0.821 0.925 0.782 0.621 0.816
+±.001 ±.001 ±.001 ±.002 ±.002 ±.001
+Stage1 0.766 0.661 0.772 0.167 0.116 0.174
+±.002 ±.002 ±.002 ±.002 ±.001 ±.002
+Stage2 0.848 0.695 0.857 0.841 0.675 0.845
+±.001 ±.001 ±.001 ±.001 ±.001 ±.001
+Stage3 0.911 0.777 0.917 0.601 0.296 0.614
+±.001 ±.001 ±.001 ±.002 ±.003 ±.003
+REM 0.872 0.649 0.880 0.526 0.200 0.522
+±.001 ±.001 ±.001 ±.003 ±.003 ±.002
+MacroAvg 0.862 0.720 0.870 0.583 0.381 0.594
+Table14.SDBclassificationmetricsformodeltrainedwithpairwiseCL.Afterhavingtrainedthemodelwithallthreemodalities,we
+extractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifySDB.±represents95%
+confidenceintervals.
+ECG Respiratory BAS
+AUROC 0.698 0.893 0.706
+±.003 ±.003 ±.004
+AUPRC 0.029 0.601 0.030
+±.001 ±.006 ±.001
+15
+
+
+--- PAGE 16 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table15.Ageclassificationmetricsformodeltrainedwithleave-one-outCL.Afterhavingtrainedthemodelwithallthreemodalities,we
+extractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifyagegroups.±represents
+95%confidenceintervals.
+AUROC AUPRC
+ECG Respiratory BAS ECG Respiratory BAS
+0-18 0.977 0.965 0.969 0.921 0.883 0.911
+±.001 ±.001 ±.001 ±.001 ±.003 ±.001
+18-35 0.833 0.789 0.755 0.493 0.455 0.380
+±.001 ±.001 ±.002 ±.003 ±.003 ±.003
+35-50 0.774 0.722 0.686 0.516 0.458 0.424
+±.001 ±.001 ±.001 ±.002 ±.003 ±.002
+50+ 0.905 0.873 0.813 0.843 0.780 0.685
+±.001 ±.001 ±.001 ±.001 ±.001 ±.002
+MacroAvg 0.872 0.837 0.805 0.693 0.644 0.600
+Table16.Genderclassificationmetricsformodeltrainedwithleave-one-outCL.Afterhavingtrainedthemodelwithallthreemodalities,
+weextractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifygender.±represents
+95%confidenceintervals.
+ECG Respiratory BAS
+AUROC 0.829 0.790 0.778
+±.001 ±.002 ±.001
+AUPRC 0.754 0.710 0.713
+±.001 ±.003 ±.002
+Table17.AgeclassificationmetricsformodeltrainedwithpairwiseCL.Afterhavingtrainedthemodelwithallthreemodalities,we
+extractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifyagegroups.±represents
+95%confidenceintervals.
+AUROC AUPRC
+ECG Respiratory BAS ECG Respiratory BAS
+0-18 0.969 0.962 0.963 0.908 0.883 0.897
+±.001 ±.001 ±.001 ±.001 ±.001 ±.001
+18-35 0.786 0.769 0.767 0.422 0.455 0.389
+±.001 ±.001 ±.001 ±.002 ±.003 ±.002
+35-50 0.712 0.702 0.706 0.441 0.458 0.436
+±.002 ±.001 ±.002 ±.002 ±.003 ±.002
+50+ 0.865 0.841 0.840 0.722 0.780 0.742
+±.001 ±.001 ±.001 ±.002 ±.001 ±.001
+MacroAvg 0.832 0.818 0.818 0.634 0.617 0.615
+Table18.GenderclassificationmetricsformodeltrainedwithpairwiseCL.Afterhavingtrainedthemodelwithallthreemodalities,we
+extractembeddingsforeachmodalityseparatelyandtrainalogisticregressionwitheachmodalitytoidentifygender.±represents95%
+confidenceintervals.
+ECG Respiratory BAS
+AUROC 0.795 0.746 0.765
+±.001 ±.001 ±.001
+AUPRC 0.722 0.676 0.702
+±.001 ±.002 ±.002
+16
+
+
+--- PAGE 17 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table19. SleepStageClassificationstratifiedbyagegroup.
+MacroAUROC MacroAUPRC
+Leave-One-Out Pairwise Leave-One-Out Pairwise
+0-18 0.890 0.849 0.665 0.594
+18-35 0.911 0.883 0.702 0.624
+35-50 0.897 0.867 0.630 0.559
+50+ 0.895 0.861 0.616 0.530
+Table20. SleepStageClassificationstratifiedbygender.
+MacroAUROC MacroAUPRC
+Leave-One-Out Pairwise Leave-One-Out Pairwise
+Male 0.899 0.869 0.674 0.594
+Female 0.910 0.880 0.693 0.621
+Table21. SDBclassificationmetricsstratifiedbyagegroup.
+AUROC AUPRC
+Leave-One-Out Pairwise Leave-One-Out Pairwise
+0-18 0.93 0.86 0.56 0.35
+±0.01 ±0.03 ±0.04 ±0.04
+18-35 0.94 0.90 0.69 0.61
+±0.01 ±0.01 ±0.02 ±0.03
+35-50 0.94 0.89 0.73 0.63
+±0.01 ±0.01 ±0.01 ±0.02
+50+ 0.94 0.90 0.73 0.60
+±0.01 ±0.01 ±0.01 ±0.01
+Table22. SDBclassificationmetricsstratifiedbygender.
+AUROC AUPRC
+Leave-One-Out Pairwise Leave-One-Out Pairwise
+Male 0.94 0.90 0.73 0.61
+±0.01 ±0.01 ±0.01 ±0.01
+Female 0.95 0.91 0.70 0.59
+±0.01 ±0.01 ±0.01 ±0.01
+Table23.SleepstageclassificationAUROCmetricsformodeltrainedwithleave-one-outCL,stratifiedbydifferentagegroups.
+0-18 18-35 35-50 50+
+Wake 0.937 0.939 0.938 0.944
+±0.002 ±0.001 ±0.001 ±0.001
+Stage1 0.805 0.831 0.808 0.793
+±0.006 ±0.003 ±0.003 ±0.002
+Stage2 0.861 0.900 0.888 0.889
+±0.002 ±0.001 ±0.002 ±0.001
+Stage3 0.906 0.932 0.902 0.902
+±0.001 ±0.002 ±0.002 ±0.002
+REM 0.941 0.956 0.950 0.949
+±0.002 ±0.001 ±0.001 ±0.001
+Avg 0.890 0.911 0.897 0.895
+17
+
+
+--- PAGE 18 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table24.SleepstageclassificationAUPRCmetricsformodeltrainedwithleave-one-outCL,stratifiedbydifferentagegroups.
+0-18 18-35 35-50 50+
+Wake 0.809 0.859 0.843 0.872
+±0.005 ±0.004 ±0.003 ±0.002
+Stage1 0.163 0.290 0.236 0.235
+±0.008 ±0.006 ±0.005 ±0.004
+Stage2 0.812 0.890 0.879 0.863
+±0.003 ±0.002 ±0.001 ±0.002
+Stage3 0.818 0.696 0.406 0.325
+±0.004 ±0.004 ±0.007 ±0.005
+REM 0.725 0.775 0.787 0.786
+±0.007 ±0.006 ±0.004 ±0.004
+Avg 0.665 0.702 0.630 0.616
+Table25.Sleepstageclassificationmetricsformodeltrainedwithleave-one-outCL.Theperformanceisstratifiedbydifferentgender
+groups.
+AUROC AUPRC
+Male Female Male Female
+Wake 0.937 0.949 0.844 0.872
+±0.001 ±0.001 ±0.002 ±0.002
+Stage1 0.805 0.824 0.251 0.225
+±0.002 ±0.002 ±0.004 ±0.004
+Stage2 0.887 0.890 0.867 0.870
+±0.001 ±0.001 ±0.001 ±0.001
+Stage3 0.919 0.934 0.635 0.729
+±0.001 ±0.001 ±0.005 ±0.004
+REM 0.944 0.955 0.771 0.767
+±0.001 ±0.001 ±0.004 ±0.002
+Avg 0.899 0.910 0.674 0.693
+Table26.SleepstageclassificationAUROCmetricsformodeltrainedwithpairwiseCL,stratifiedbydifferentagegroups.
+0-18 18-35 35-50 50+
+Wake 0.919 0.928 0.926 0.926
+±0.002 ±0.002 ±0.001 ±0.001
+Stage1 0.712 0.804 0.775 0.758
+±0.009 ±0.004 ±0.003 ±0.003
+Stage2 0.827 0.870 0.863 0.861
+±0.002 ±0.002 ±0.002 ±0.002
+Stage3 0.891 0.911 0.881 0.891
+±0.002 ±0.002 ±0.003 ±0.002
+REM 0.894 0.901 0.891 0.868
+±0.002 ±0.002 ±0.002 ±0.002
+Avg 0.849 0.883 0.867 0.861
+Table27.SleepstageclassificationAUPRCmetricsformodeltrainedwithpairwiseCL,stratifiedbydifferentagegroups.
+0-18 18-35 35-50 50+
+Wake 0.771 0.828 0.813 0.838
+±0.005 ±0.003 ±0.003 ±0.003
+Stage1 0.103 0.218 0.191 0.198
+±0.006 ±0.007 ±0.004 ±0.004
+Stage2 0.780 0.861 0.857 0.833
+±0.003 ±0.003 ±0.002 ±0.002
+Stage3 0.775 0.617 0.340 0.267
+±0.004 ±0.003 ±0.009 ±0.007
+REM 0.539 0.597 0.591 0.516
+±0.009 ±0.006 ±0.006 ±0.005
+Avg 0.594 0.624 0.559 0.530
+18
+
+
+--- PAGE 19 ---
+SleepFM:Multi-ModalSleepFoundationModel
+Table28.SleepstageclassificationmetricsformodeltrainedwithpairwiseCL.Theperformanceisstratifiedbydifferentgendergroups.
+AUROC AUPRC
+Male Female Male Female
+Wake 0.924 0.932 0.813 0.834
+±0.001 ±0.001 ±0.002 ±0.002
+Stage1 0.769 0.791 0.194 0.192
+±0.002 ±0.002 ±0.003 ±0.004
+Stage2 0.859 0.861 0.840 0.840
+±0.001 ±0.001 ±0.001 ±0.002
+Stage3 0.910 0.922 0.559 0.687
+±0.001 ±0.001 ±0.002 ±0.004
+REM 0.882 0.892 0.561 0.554
+±0.001 ±0.001 ±0.002 ±0.005
+Avg 0.869 0.880 0.594 0.621
+Table29.SleepstageclassificationmetricsformodeltrainedwithsupervisedCNNindividuallyoneachmodality. ±represents95%
+confidenceintervals.
+AUROC AUPRC
+ECG Respiratory BAS ECG Respiratory BAS
+Wake 0.440 0.571 0.916 0.186 0.277 0.800
+±.004 ±.001 ±.001 ±.001 ±.002 ±.002
+Stage1 0.478 0.564 0.736 0.063 0.087 0.146
+±.002 ±.002 ±.002 ±.001 ±.001 ±.001
+Stage2 0.474 0.540 0.823 0.481 0.550 0.800
+±.001 ±.002 ±.001 ±.002 ±.001 ±.001
+Stage3 0.620 0.552 0.895 0.121 0.120 0.593
+±.001 ±.002 ±.001 ±.001 ±.002 ±.004
+REM 0.490 0.591 0.875 0.128 0.171 0.581
+±.002 ±.002 ±.001 ±.003 ±.002 ±.003
+MacroAvg 0.500 0.563 0.850 0.195 0.241 0.584
+Table30.SDBclassificationmetricsformodeltrainedwithsupervisedCNNindividuallyoneachmodality.±represents95%confidence
+intervals.
+ECG Respiratory BAS
+AUROC 0.552 0.870 0.387
+±.004 ±.003 ±.004
+AUPRC 0.019 0.553 0.012
+±.001 ±.003 ±.001
+Table31.ExternalvalidationofSleepFMonPhysionetComputinginCardiology2018challenge(Ghassemietal.,2018).TheSleepFM
+modelwasonlypretrainedonStanford’ssleepdata.SupervisedCNNwastrainedendtoendontheexternaldatabasetoclassifysleep
+stages. PrevalenceofWake,Stage1,2,3,andREMare0.17,0.15,0.42,0.11,and0.13,respectively. Testsize: 100participants. ±
+represents95%confidenceintervals.
+SleepFM SupervisedCNN
+AUROC AUPRC F1 AUROC AUPRC F1
+Wake 0.966 0.867 0.790±.001 0.880 0.617 0.446
+±.001 ±.003 ±.002 ±.004 ±.002
+Stage1 0.830 0.471 0.439 0.634 0.191 0.001
+±.004 ±.002 ±.002 ±.003 ±.002 ±.000
+Stage2 0.902 0.857 0.793 0.781 0.668 0.622
+±.002 ±.004 ±.001 ±.001 ±.004 ±.001
+Stage3 0.971 0.821 0.743 0.903 0.610 0.192
+±.001 ±.004 ±.001 ±.002 ±.002 ±.001
+REM 0.950 0.778 0.717 0.572 0.146 0.000
+±.002 ±.005 ±.002 ±.003 ±.002 ±.000
+MacroAvg 0.924 0.759 0.700 0.754 0.447 0.253
+19
