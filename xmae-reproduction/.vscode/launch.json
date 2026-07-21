@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "xMAE: trace one training step",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "program": "${workspaceFolder}/train_demo.py",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--steps",
+        "1",
+        "--batch-size",
+        "1",
+        "--mask-ratio",
+        "0.9"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/upstream"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}
